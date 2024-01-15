@@ -1,6 +1,9 @@
 package com.fageniucode.springdatajpa;
 
+import com.fageniucode.springdatajpa.entities.Book;
 import com.fageniucode.springdatajpa.entities.Student;
+import com.fageniucode.springdatajpa.entities.StudentIdCard;
+import com.fageniucode.springdatajpa.repositories.StudentIdCardRepository;
 import com.fageniucode.springdatajpa.repositories.StudentRepository;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
@@ -11,7 +14,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @SpringBootApplication
 public class SpringDataJpaApplication {
@@ -21,9 +26,54 @@ public class SpringDataJpaApplication {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(StudentRepository studentRepository){
+    CommandLineRunner commandLineRunner(StudentRepository studentRepository, StudentIdCardRepository studentIdCardRepository){
         return args -> {
             //generateRandomStudents(studentRepository);
+
+            Faker faker = new Faker();
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String email = String.format("%s.%s@fageniuscode.edu", firstName, lastName);
+            Student student = new Student(
+                    firstName,
+                    lastName,
+                    email,
+                    faker.number().numberBetween(17,55));
+
+            student.addBook(
+                    new Book("Clean Code", LocalDateTime.now().minusDays(4)));
+
+            student.addBook(
+                    new Book("Think and grow Rich", LocalDateTime.now()));
+
+            student.addBook(
+                    new Book("Spring Data JPA", LocalDateTime.now().minusYears(1)));
+
+            StudentIdCard studentIdCard = new StudentIdCard("123456789", student);
+
+            student.setStudentIdCard(studentIdCard);
+
+            studentRepository.save(student);
+
+            // Avec @OneToOne(cascade = CascadeType.ALL),
+            // En enregistrant dans la table StudentIdCard, on enregistre en même temps
+            // dans la table Student
+            //studentIdCardRepository.save(studentIdCard);
+
+            studentRepository.findById(1L).
+                    ifPresent(s -> {
+                        System.out.println("fetch book lazy...");
+                        List<Book> books = student.getBooks();
+                        books.forEach(book -> {
+                            System.out.println(
+                                    s.getFirstName() + " borrowed " + book.getBookName());
+                        });
+                    });
+
+            /*studentIdCardRepository.findById(1L).
+                    ifPresent(System.out::println);*/
+
+            // studentRepository.deleteById(1L);
 
             /* System.out.println("Adding ibrah and Ahmed");
             Student ibrah = new Student("Ibrahima",
