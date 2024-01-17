@@ -1,8 +1,6 @@
 package com.fageniucode.springdatajpa;
 
-import com.fageniucode.springdatajpa.entities.Book;
-import com.fageniucode.springdatajpa.entities.Student;
-import com.fageniucode.springdatajpa.entities.StudentIdCard;
+import com.fageniucode.springdatajpa.entities.*;
 import com.fageniucode.springdatajpa.repositories.StudentIdCardRepository;
 import com.fageniucode.springdatajpa.repositories.StudentRepository;
 import com.github.javafaker.Faker;
@@ -52,6 +50,26 @@ public class SpringDataJpaApplication {
             StudentIdCard studentIdCard = new StudentIdCard("123456789", student);
 
             student.setStudentIdCard(studentIdCard);
+
+            student.addEnrolment(new Enrolment(
+                    new EnrolmentId(1L, 1L),
+                    student,
+                    new Course("Computer Science", "IT"),
+                    LocalDateTime.now()
+            ));
+
+            student.addEnrolment(new Enrolment(
+                    new EnrolmentId(1L, 2L),
+                    student,
+                    new Course("Amigoscode spring data JPA", "IT"),
+                    LocalDateTime.now().minusDays(3)
+            ));
+
+            /*student.enrolToCourse(
+                    new Course("Computer Science", "IT"));
+
+            student.enrolToCourse(
+                    new Course("Amigoscode spring data JPA", "IT"));*/
 
             studentRepository.save(student);
 
